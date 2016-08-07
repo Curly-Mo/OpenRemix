@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Open Remix</title>
+</head>
+
+<body> 
+  <form id="audio-form">
+    <fieldset>
+      <legend></legend>
+      <div>
+        <label for="file">Audio File:</label>
+        <input accept="audio/*" id="file" name="file" type="file">
+      </div>
+      <button type="submit" id="analyze-button">Analyze!</button>
+    </fieldset>
+  </form>
+
+	<script src="static/js/openremix.js"></script>
+  <script>
+  var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  var remixer;
+
+  var form = document.querySelector('#audio-form');
+  form.addEventListener('submit', function(e){
+      e.preventDefault();
+      var reader = new FileReader();
+      reader.onload = function(e) {
+          audioCtx.decodeAudioData(e.target.result, function(buffer) {
+              var data = new FormData(form);
+              window.remixer = new OpenRemix.Remixer(audioCtx, data, buffer, finished_analyze)
+          });
+      };
+      reader.readAsArrayBuffer(this.file.files[0]);
+
+  });
+
+  function finished_analyze(){
+      console.log(this);
+      for(var i=0; i<this.beats.length; i++){
+          var beat = this.beats[i];
+          var div = document.createElement('div');
+          div.style.height = '20px';
+          div.style.width = '40px';
+          div.style.backgroundColor = toColor(beat.features.centroid/20, beat.features.amplitude);
+          div.style.display = 'inline-block';
+          div.style.margin = '5px';
+          div.setAttribute('data-index', i);
+          document.body.appendChild(div);
+          div.addEventListener('click', function(){
+              var index = this.getAttribute('data-index');
+              remixer.queue(remixer.beats[index]);
+          });
+      }
+  }
+  // Convert integer [0:100] to rgb value
+  function toColor(val, saturation) {
+      var h= Math.floor((100 - val) * 120 / 100);
+      var s = saturation;
+      var v = 1;
+      return hsv2rgb(h, s, v);
+  }
+
+  var hsv2rgb = function(h, s, v) {
+    // adapted from http://schinckel.net/2012/01/10/hsv-to-rgb-in-javascript/
+    var rgb, i, data = [];
+    if (s === 0) {
+      rgb = [v,v,v];
+    } else {
+      h = h / 60;
+      i = Math.floor(h);
+      data = [v*(1-s), v*(1-s*(h-i)), v*(1-s*(1-(h-i)))];
+      switch(i) {
+        case 0:
+          rgb = [v, data[2], data[0]];
+          break;
+        case 1:
+          rgb = [data[1], v, data[0]];
+          break;
+        case 2:
+          rgb = [data[0], v, data[2]];
+          break;
+        case 3:
+          rgb = [data[0], data[1], v];
+          break;
+        case 4:
+          rgb = [data[2], data[0], v];
+          break;
+        default:
+          rgb = [v, data[0], data[1]];
+          break;
+      }
+    }
+    return '#' + rgb.map(function(x){
+      return ("0" + Math.round(x*255).toString(16)).slice(-2);
+    }).join('');
+  };
+  </script>
+</body>
+
+</html>
+

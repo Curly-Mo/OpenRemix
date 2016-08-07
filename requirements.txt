@@ -1,0 +1,4 @@
+librosa >= 0.4.3
+pandas >= 0.16.0
+pysoundfile >= 0.8
+six >= 1.10.0
