@@ -95,7 +95,7 @@ OpenRemix.shuffle = function(beats){
 };
 
 OpenRemix.timbral_distance = function(s1, s2) {
-    pairs = Object.keys(s1.features.chroma).map(function (key) {return [s1.features.chroma[key], s1.features.chroma[key]]});
+    pairs = Object.keys(s1.features.chroma).map(function (key) {return [s1.features.chroma[key], s2.features.chroma[key]]});
     v1 = pairs.map(function (item) {return item[0]});
     v2 = pairs.map(function (item) {return item[1]});
     return OpenRemix.euclidean_distance(v1, v2);
